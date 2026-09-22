@@ -24,6 +24,16 @@ html,body{margin:0;min-height:100%;font-family:Arial,sans-serif;background:#f7ef
 .itemDetail{font-size:13px;color:#667085;margin-top:2px}
 .empty{background:white;padding:25px;text-align:center;border-radius:10px;box-shadow:0 2px 7px #bbb}
 @media(max-width:600px){.box{margin:10px}.qr{width:280px;height:280px}.customer,.total{font-size:18px}}
+
+.monitorGrid{overflow:hidden}
+.column{width:49%;box-sizing:border-box}
+.column.pending{float:left}
+.column.delivered{float:right}
+.sectionHead{padding:12px;border-radius:10px;background:#263754;color:#fff;font-size:20px;font-weight:bold;text-align:center;margin-bottom:10px}
+.sectionHead .count{display:inline-block;background:#fff;color:#263754;border-radius:14px;padding:2px 8px;margin-left:5px;font-size:15px}
+.delivered .sectionHead{background:#53657e}
+.cancelled{opacity:.72}
+@media(max-width:700px){.column{width:100%;float:none!important}.column.delivered{margin-top:18px}}
 </style></head><body>
 <div class="h"><h1>CafePostres</h1><div>Monitor de pedidos · Acceso protegido</div></div>
 <div id="authBox" class="box">
@@ -41,7 +51,10 @@ html,body{margin:0;min-height:100%;font-family:Arial,sans-serif;background:#f7ef
 <button class="btn" onclick="loadFeed()">Actualizar</button>
 <div id="feedState" class="small">Conectando…</div>
 </div>
-<div id="orders"></div>
+<div id="orders" class="monitorGrid">
+<div class="column pending"><div class="sectionHead">Pendientes <span id="pendingCount" class="count">0</span></div><div id="pendingOrders"></div></div>
+<div class="column delivered"><div class="sectionHead">Entregados <span id="deliveredCount" class="count">0</span></div><div id="deliveredOrders"></div></div>
+</div>
 </div>
 <script>
 (function(g){var M={},C={};
@@ -1369,24 +1382,35 @@ function itemDetail(it){
  if(it.notes)a.push('Nota: '+esc(it.notes));
  return a.join(' · ');
 }
+function orderCard(o,isCancelled){
+ var items=o.items||[],h='<div class="order'+(isCancelled?' cancelled':'')+'"><div class="orderTop"><div class="customer">'+esc(o.customer||'Sin nombre')+'</div><div class="total">'+money(o.total)+'</div><div class="meta">'+esc(dateText(o.created_at))+'</div><span class="badge">'+esc(o.status||'Sin estado')+'</span></div><div class="items">';
+ if(items&&items.length){
+  for(var j=0;j<items.length;j++){
+   var it=items[j]||{},qty=Number(it.quantity||1),detail=itemDetail(it);
+   h+='<div class="item"><div class="itemName">'+esc(qty)+' × '+esc(it.productName||'Producto')+' <span style="float:right">'+money(Number(it.unitPrice||0)*qty)+'</span></div>';
+   if(detail)h+='<div class="itemDetail">'+detail+'</div>';
+   h+='</div>';
+  }
+ }else h+='<div class="itemDetail">Sin detalle de productos.</div>';
+ return h+'</div></div>';
+}
 function renderOrders(orders){
- var box=document.getElementById('orders');
- if(!orders||!orders.length){box.innerHTML='<div class="empty"><b>Sin pedidos para mostrar.</b></div>';return}
- var h='';
- for(var i=0;i<orders.length;i++){
-  var o=orders[i]||{},items=o.items||[];
-  h+='<div class="order"><div class="orderTop"><div class="customer">'+esc(o.customer||'Sin nombre')+'</div><div class="total">'+money(o.total)+'</div><div class="meta">'+esc(dateText(o.created_at))+'</div><span class="badge">'+esc(o.status||'Sin estado')+'</span></div><div class="items">';
-  if(items&&items.length){
-   for(var j=0;j<items.length;j++){
-    var it=items[j]||{},qty=Number(it.quantity||1),detail=itemDetail(it);
-    h+='<div class="item"><div class="itemName">'+esc(qty)+' × '+esc(it.productName||'Producto')+' <span style="float:right">'+money(Number(it.unitPrice||0)*qty)+'</span></div>';
-    if(detail)h+='<div class="itemDetail">'+detail+'</div>';
-    h+='</div>';
-   }
-  }else h+='<div class="itemDetail">Sin detalle de productos.</div>';
-  h+='</div></div>';
+ var pending=[],delivered=[],i,o,st;
+ orders=orders||[];
+ for(i=0;i<orders.length;i++){
+  o=orders[i]||{};st=String(o.status||'').toLowerCase();
+  if(st.indexOf('pendiente')>=0){pending.push(o)}
+  else if(st.indexOf('pagado')>=0||st.indexOf('entregado')>=0){delivered.push(o)}
+  else if(st.indexOf('cancelado')>=0){delivered.push(o)}
+  else{pending.push(o)}
  }
- box.innerHTML=h;
+ document.getElementById('pendingCount').innerHTML=pending.length;
+ document.getElementById('deliveredCount').innerHTML=delivered.length;
+ var ph='',dh='';
+ for(i=0;i<pending.length;i++)ph+=orderCard(pending[i],false);
+ for(i=0;i<delivered.length;i++){st=String(delivered[i].status||'').toLowerCase();dh+=orderCard(delivered[i],st.indexOf('cancelado')>=0)}
+ document.getElementById('pendingOrders').innerHTML=ph||'<div class="empty"><b>Sin pedidos pendientes.</b></div>';
+ document.getElementById('deliveredOrders').innerHTML=dh||'<div class="empty"><b>Sin pedidos entregados.</b></div>';
 }
 function sessionLost(msg){
  stopFeed();sessionToken='';sessionExpiresAt=0;
