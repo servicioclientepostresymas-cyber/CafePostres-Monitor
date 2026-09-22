@@ -1,4 +1,49 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>CafePostres Monitor</title><style>html,body{margin:0;min-height:100%;font-family:Arial;background:#f7efdf;color:#28344a}.h{background:#263754;color:white;padding:18px;text-align:center}.box{max-width:560px;margin:25px auto;background:white;padding:24px;text-align:center;border-radius:12px;box-shadow:0 2px 9px #999}.qr{width:290px;height:290px;margin:20px auto}.qr img{width:100%;height:100%}.state{padding:11px;background:#fff6df;border-radius:7px}.err{background:#fde9e5}.ok{background:#e9f5e8}.btn{padding:12px 18px;background:#263754;color:white;border:0;border-radius:8px;font-size:17px}.timer{font-size:23px;font-weight:bold}</style></head><body><div class="h"><h1>CafePostres</h1><div>Monitor de pedidos · Acceso protegido</div></div><div class="box"><h2 id="title">🔒 Autorizar este monitor</h2><div id="info">Generando código de autorización…</div><div id="qr" class="qr"></div><div id="timer" class="timer"></div><div id="state" class="state">Preparando conexión segura…</div><button id="renew" class="btn" style="display:none" onclick="createChallenge()">Generar nuevo QR</button><p>Escanea el QR desde CafePostres y confirma <b>Autorizar</b>. Caduca en 2 minutos.</p></div><script>
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>CafePostres Monitor</title><style>
+html,body{margin:0;min-height:100%;font-family:Arial,sans-serif;background:#f7efdf;color:#28344a}
+.h{background:#263754;color:white;padding:14px;text-align:center}
+.h h1{margin:0 0 4px;font-size:28px}
+.box{max-width:700px;margin:18px auto;background:white;padding:20px;text-align:center;border-radius:12px;box-shadow:0 2px 9px #999}
+.qr{width:290px;height:290px;margin:18px auto}
+.state{padding:11px;background:#fff6df;border-radius:7px;margin:10px 0}
+.err{background:#fde9e5}.ok{background:#e9f5e8}
+.btn{padding:12px 18px;background:#263754;color:white;border:0;border-radius:8px;font-size:17px;margin:6px}
+.timer{font-size:23px;font-weight:bold}
+#ordersPanel{display:none;max-width:900px;margin:14px auto;padding:0 10px 25px}
+.toolbar{background:white;padding:12px;border-radius:10px;box-shadow:0 2px 7px #bbb;margin-bottom:12px;text-align:center}
+.toolbar .small{font-size:13px;color:#667085;margin-top:5px}
+.order{background:white;border-radius:10px;box-shadow:0 2px 7px #bbb;margin:10px 0;padding:14px}
+.orderTop{overflow:hidden;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:8px}
+.customer{font-size:21px;font-weight:bold;float:left}
+.total{font-size:21px;font-weight:bold;float:right}
+.meta{clear:both;font-size:13px;color:#667085;padding-top:5px}
+.badge{display:inline-block;padding:5px 8px;border-radius:12px;background:#fff0c7;font-size:12px;font-weight:bold;margin-top:5px}
+.items{text-align:left;margin-top:8px}
+.item{padding:7px 0;border-bottom:1px solid #f0f0f0}
+.item:last-child{border-bottom:0}
+.itemName{font-weight:bold}
+.itemDetail{font-size:13px;color:#667085;margin-top:2px}
+.empty{background:white;padding:25px;text-align:center;border-radius:10px;box-shadow:0 2px 7px #bbb}
+@media(max-width:600px){.box{margin:10px}.qr{width:280px;height:280px}.customer,.total{font-size:18px}}
+</style></head><body>
+<div class="h"><h1>CafePostres</h1><div>Monitor de pedidos · Acceso protegido</div></div>
+<div id="authBox" class="box">
+<h2 id="title">🔒 Autorizar este monitor</h2>
+<div id="info">Generando código de autorización…</div>
+<div id="qr" class="qr"></div>
+<div id="timer" class="timer"></div>
+<div id="state" class="state">Preparando conexión segura…</div>
+<button id="renew" class="btn" style="display:none" onclick="createChallenge()">Generar nuevo QR</button>
+<p>Escanea el QR desde CafePostres y confirma <b>Autorizar</b>. Caduca en 2 minutos.</p>
+</div>
+<div id="ordersPanel">
+<div class="toolbar">
+<b>Pedidos CafePostres</b>
+<button class="btn" onclick="loadFeed()">Actualizar</button>
+<div id="feedState" class="small">Conectando…</div>
+</div>
+<div id="orders"></div>
+</div>
+<script>
 (function(g){var M={},C={};
 M["QR8bitByte.js"]=function(module,exports,__req){
 var QRMode = __req("QRMode.js");
@@ -1257,12 +1302,16 @@ module.exports = QRCode;
 };
 function __req(id){if(C[id])return C[id].exports;var m=C[id]={exports:{}};M[id](m,m.exports,__req);return m.exports;}g.CPQRCode=__req("index.js");g.CPQRError=__req("QRErrorCorrectLevel.js");})(this);
 
+
 var SUPABASE_PUBLISHABLE_KEY="sb_publishable_A-SSkw4xhgQE_K5E4mW3-A_GPIQZuHT";
 var FUNCTION_URL="https://lpyeujvkqmbvigunbkni.supabase.co/functions/v1/cafepostres-monitor-auth";
 var challengeId="",browserSecret="",expiresAt=0,pollHandle=null,timerHandle=null;
+var sessionToken="",sessionExpiresAt=0,feedHandle=null;
+
 function state(t,c){var e=document.getElementById('state');e.className='state '+(c||'');e.innerHTML=t}
-function req(b,cb){var x=new XMLHttpRequest();x.open('POST',FUNCTION_URL,true);x.setRequestHeader('apikey',SUPABASE_PUBLISHABLE_KEY);x.setRequestHeader('Authorization','Bearer '+SUPABASE_PUBLISHABLE_KEY);x.setRequestHeader('Content-Type','application/json');x.timeout=12000;x.onreadystatechange=function(){if(x.readyState!==4)return;if(x.status>=200&&x.status<300){try{cb(null,JSON.parse(x.responseText))}catch(e){cb('Respuesta inválida')}}else cb('Error HTTP '+x.status)};x.onerror=function(){cb('Error de conexión')};x.ontimeout=function(){cb('Tiempo agotado')};x.send(JSON.stringify(b))}
-function stop(){if(pollHandle)clearInterval(pollHandle);if(timerHandle)clearInterval(timerHandle);pollHandle=timerHandle=null}
+function req(b,cb){var x=new XMLHttpRequest();x.open('POST',FUNCTION_URL,true);x.setRequestHeader('apikey',SUPABASE_PUBLISHABLE_KEY);x.setRequestHeader('Authorization','Bearer '+SUPABASE_PUBLISHABLE_KEY);x.setRequestHeader('Content-Type','application/json');x.timeout=12000;x.onreadystatechange=function(){if(x.readyState!==4)return;if(x.status>=200&&x.status<300){try{cb(null,JSON.parse(x.responseText))}catch(e){cb('Respuesta inválida')}}else{var msg='Error HTTP '+x.status;try{var z=JSON.parse(x.responseText);if(z&&z.error)msg=z.error}catch(ignore){}cb(msg)}};x.onerror=function(){cb('Error de conexión')};x.ontimeout=function(){cb('Tiempo agotado')};x.send(JSON.stringify(b))}
+function stopAuth(){if(pollHandle)clearInterval(pollHandle);if(timerHandle)clearInterval(timerHandle);pollHandle=timerHandle=null}
+function stopFeed(){if(feedHandle)clearInterval(feedHandle);feedHandle=null}
 
 function showQR(text){
  try{
@@ -1273,8 +1322,103 @@ function showQR(text){
   h+='</table>';document.getElementById('qr').innerHTML=h;
  }catch(e){state('No se pudo dibujar el QR: '+e.message,'err');}
 }
-function createChallenge(){stop();challengeId=browserSecret='';document.getElementById('title').innerHTML='🔒 Autorizar este monitor';document.getElementById('renew').style.display='none';document.getElementById('qr').innerHTML='';if(SUPABASE_PUBLISHABLE_KEY==='PEGA_AQUI_TU_PUBLISHABLE_KEY'){state('Falta colocar la Publishable key en index.html.','err');return}req({action:'CREATE'},function(er,r){if(er||!r||!r.ok){state(er||'No se pudo crear el desafío.','err');return}challengeId=r.challengeId;browserSecret=r.browserSecret;expiresAt=new Date(r.expiresAt).getTime();showQR(r.qrPayload);document.getElementById('info').innerHTML='Escanea desde <b>CafePostres → Autorizar monitor</b>';state('Esperando autorización…','');tick();timerHandle=setInterval(tick,1000);pollHandle=setInterval(check,3000)})}
-function tick(){var n=Math.max(0,Math.ceil((expiresAt-Date.now())/1000)),m=Math.floor(n/60),s=n%60;document.getElementById('timer').innerHTML='Caduca en '+m+':'+(s<10?'0':'')+s;if(n<=0){stop();browserSecret='';state('Este QR ya no es válido.','err');document.getElementById('renew').style.display='inline-block'}}
-function check(){if(!challengeId||!browserSecret)return;req({action:'STATUS',challengeId:challengeId,browserSecret:browserSecret},function(er,r){if(er)return;if(r.status==='AUTHORIZED'){consume()}else if(r.status==='EXPIRED'){stop();browserSecret='';state('Este QR ya no es válido.','err');document.getElementById('renew').style.display='inline-block'}})}
-function consume(){stop();state('Autorización recibida. Validando acceso…','');req({action:'CONSUME',challengeId:challengeId,browserSecret:browserSecret},function(er,r){if(er||!r||!r.ok){state(er||'No se pudo consumir la autorización.','err');document.getElementById('renew').style.display='inline-block';return}browserSecret='';document.getElementById('qr').innerHTML='';document.getElementById('title').innerHTML='✓ Monitor autorizado';document.getElementById('timer').innerHTML='';document.getElementById('info').innerHTML='Autorización de un solo uso consumida correctamente.';state('Acceso validado. Preparado para abrir pedidos.','ok')})}
-createChallenge();</script></body></html>
+
+function createChallenge(){
+ stopAuth();stopFeed();sessionToken='';sessionExpiresAt=0;challengeId=browserSecret='';
+ document.getElementById('ordersPanel').style.display='none';
+ document.getElementById('authBox').style.display='block';
+ document.getElementById('title').innerHTML='🔒 Autorizar este monitor';
+ document.getElementById('info').innerHTML='Generando código de autorización…';
+ document.getElementById('renew').style.display='none';
+ document.getElementById('qr').innerHTML='';
+ state('Preparando conexión segura…','');
+ req({action:'CREATE'},function(er,r){
+  if(er||!r||!r.ok){state(er||'No se pudo crear el desafío.','err');document.getElementById('renew').style.display='inline-block';return}
+  challengeId=r.challengeId;browserSecret=r.browserSecret;expiresAt=new Date(r.expiresAt).getTime();
+  showQR(r.qrPayload);
+  document.getElementById('info').innerHTML='Escanea desde <b>CafePostres → Autorizar monitor</b>';
+  state('Esperando autorización…','');tick();timerHandle=setInterval(tick,1000);pollHandle=setInterval(check,3000);
+ })
+}
+function tick(){var n=Math.max(0,Math.ceil((expiresAt-Date.now())/1000)),m=Math.floor(n/60),s=n%60;document.getElementById('timer').innerHTML='Caduca en '+m+':'+(s<10?'0':'')+s;if(n<=0){stopAuth();browserSecret='';state('Este QR ya no es válido.','err');document.getElementById('renew').style.display='inline-block'}}
+function check(){if(!challengeId||!browserSecret)return;req({action:'STATUS',challengeId:challengeId,browserSecret:browserSecret},function(er,r){if(er)return;if(r.status==='AUTHORIZED'){consume()}else if(r.status==='EXPIRED'){stopAuth();browserSecret='';state('Este QR ya no es válido.','err');document.getElementById('renew').style.display='inline-block'}})}
+function consume(){
+ stopAuth();state('Autorización recibida. Creando sesión temporal…','');
+ req({action:'CONSUME',challengeId:challengeId,browserSecret:browserSecret},function(er,r){
+  if(er||!r||!r.ok){state(er||'No se pudo consumir la autorización.','err');document.getElementById('renew').style.display='inline-block';return}
+  browserSecret='';challengeId='';
+  sessionToken=r.sessionToken||'';sessionExpiresAt=new Date(r.sessionExpiresAt).getTime();
+  if(!sessionToken){state('La sesión temporal no fue recibida.','err');document.getElementById('renew').style.display='inline-block';return}
+  document.getElementById('qr').innerHTML='';
+  document.getElementById('title').innerHTML='✓ Monitor autorizado';
+  document.getElementById('timer').innerHTML='';
+  document.getElementById('info').innerHTML='Autorización de un solo uso consumida correctamente.';
+  state('Abriendo pedidos…','ok');
+  setTimeout(openOrders,400);
+ })
+}
+
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function money(v){var n=Number(v||0);return '$'+n.toFixed(2)}
+function dateText(v){var n=Number(v);var d=isNaN(n)?new Date(v):new Date(n);if(isNaN(d.getTime()))return '';try{return d.toLocaleString()}catch(e){return d.toString()}}
+function itemDetail(it){
+ var a=[];
+ if(it.variant)a.push('Variante: '+esc(it.variant));
+ if(it.options){if(typeof it.options==='string')a.push(esc(it.options));else try{a.push(esc(JSON.stringify(it.options)))}catch(e){}}
+ if(it.extras){if(typeof it.extras==='string')a.push(esc(it.extras));else try{a.push(esc(JSON.stringify(it.extras)))}catch(e){}}
+ if(it.notes)a.push('Nota: '+esc(it.notes));
+ return a.join(' · ');
+}
+function renderOrders(orders){
+ var box=document.getElementById('orders');
+ if(!orders||!orders.length){box.innerHTML='<div class="empty"><b>Sin pedidos para mostrar.</b></div>';return}
+ var h='';
+ for(var i=0;i<orders.length;i++){
+  var o=orders[i]||{},items=o.items||[];
+  h+='<div class="order"><div class="orderTop"><div class="customer">'+esc(o.customer||'Sin nombre')+'</div><div class="total">'+money(o.total)+'</div><div class="meta">'+esc(dateText(o.created_at))+'</div><span class="badge">'+esc(o.status||'Sin estado')+'</span></div><div class="items">';
+  if(items&&items.length){
+   for(var j=0;j<items.length;j++){
+    var it=items[j]||{},qty=Number(it.quantity||1),detail=itemDetail(it);
+    h+='<div class="item"><div class="itemName">'+esc(qty)+' × '+esc(it.productName||'Producto')+' <span style="float:right">'+money(Number(it.unitPrice||0)*qty)+'</span></div>';
+    if(detail)h+='<div class="itemDetail">'+detail+'</div>';
+    h+='</div>';
+   }
+  }else h+='<div class="itemDetail">Sin detalle de productos.</div>';
+  h+='</div></div>';
+ }
+ box.innerHTML=h;
+}
+function sessionLost(msg){
+ stopFeed();sessionToken='';sessionExpiresAt=0;
+ document.getElementById('ordersPanel').style.display='none';
+ document.getElementById('authBox').style.display='block';
+ document.getElementById('qr').innerHTML='';
+ document.getElementById('timer').innerHTML='';
+ document.getElementById('title').innerHTML='🔒 Nueva autorización requerida';
+ document.getElementById('info').innerHTML='La sesión del monitor terminó.';
+ state(msg||'Genera un nuevo QR para continuar.','err');
+ document.getElementById('renew').style.display='inline-block';
+}
+function loadFeed(){
+ if(!sessionToken){sessionLost('No existe una sesión activa.');return}
+ if(sessionExpiresAt&&Date.now()>=sessionExpiresAt){sessionLost('La sesión temporal caducó.');return}
+ document.getElementById('feedState').innerHTML='Actualizando pedidos…';
+ req({action:'FEED',sessionToken:sessionToken},function(er,r){
+  if(er||!r||!r.ok){
+   if(er==='SESSION_EXPIRED'||er==='INVALID_SESSION'||er==='SESSION_REVOKED'){sessionLost('La sesión temporal terminó. Autoriza nuevamente.');return}
+   document.getElementById('feedState').innerHTML='No se pudo actualizar: '+esc(er||'FEED_FAILED');return
+  }
+  if(r.sessionExpiresAt)sessionExpiresAt=new Date(r.sessionExpiresAt).getTime();
+  renderOrders(r.orders||[]);
+  var d=new Date();
+  document.getElementById('feedState').innerHTML=(r.orders?r.orders.length:0)+' pedidos · actualizado '+d.toLocaleTimeString();
+ })
+}
+function openOrders(){
+ document.getElementById('authBox').style.display='none';
+ document.getElementById('ordersPanel').style.display='block';
+ loadFeed();
+ stopFeed();feedHandle=setInterval(loadFeed,5000);
+}
+createChallenge();
+</script></body></html>
