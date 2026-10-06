@@ -1405,18 +1405,25 @@ var challengeId="",browserSecret="",expiresAt=0,pollHandle=null,timerHandle=null
 var sessionToken="",sessionExpiresAt=0,feedHandle=null;
 
 function state(t,c){var e=document.getElementById('state');e.className='state '+(c||'');e.innerHTML=t}
-function req(b,cb){var x=new XMLHttpRequest();x.open('POST',FUNCTION_URL,true);x.setRequestHeader('apikey',SUPABASE_PUBLISHABLE_KEY);x.setRequestHeader('Authorization','Bearer '+SUPABASE_PUBLISHABLE_KEY);x.setRequestHeader('Content-Type','application/json');x.timeout=12000;x.onreadystatechange=function(){if(x.readyState!==4)return;if(x.status>=200&&x.status<300){try{cb(null,JSON.parse(x.responseText))}catch(e){cb('Respuesta inválida')}}else{var msg='Error HTTP '+x.status;try{var z=JSON.parse(x.responseText);if(z&&z.error)msg=z.error}catch(ignore){}cb(msg)}};x.onerror=function(){cb('Error de conexión')};x.ontimeout=function(){cb('Tiempo agotado')};x.send(JSON.stringify(b))}
-function stopAuth(){if(pollHandle)clearInterval(pollHandle);if(timerHandle)clearInterval(timerHandle);pollHandle=timerHandle=null}
-function stopFeed(){if(feedHandle)clearInterval(feedHandle);feedHandle=null}
-
-function showQR(text){
- try{
-  var q=new CPQRCode(0,CPQRError.M);q.addData(text);q.make();
-  var n=q.getModuleCount(),quiet=4,total=n+quiet*2,size=Math.max(3,Math.floor(280/total));
-  var h='<table role="img" aria-label="QR de autorizacion" style="border-collapse:collapse;border-spacing:0;margin:auto;background:#fff">';
-  for(var r=-quiet;r<n+quiet;r++){h+='<tr>';for(var c=-quiet;c<n+quiet;c++){var dark=(r>=0&&c>=0&&r<n&&c<n&&q.isDark(r,c));h+='<td style="padding:0;margin:0;width:'+size+'px;height:'+size+'px;background:'+(dark?'#000':'#fff')+'"></td>';}h+='</tr>';}
-  h+='</table>';document.getElementById('qr').innerHTML=h;
- }catch(e){state('No se pudo dibujar el QR: '+e.message,'err');}
+function req(body,cb){
+ var x=new XMLHttpRequest();
+ x.open("POST",FUNCTION_URL,true);
+ x.setRequestHeader("Content-Type","application/json");
+ x.setRequestHeader("apikey",SUPABASE_PUBLISHABLE_KEY);
+ x.onreadystatechange=function(){
+  if(x.readyState!==4)return;
+  var r=null;
+  try{r=JSON.parse(x.responseText||"{}")}catch(e){
+   r={ok:false,error:"HTTP_"+x.status,details:x.responseText||"Respuesta no JSON"};
+  }
+  if(x.status>=200&&x.status<300){cb(null,r);return}
+  if(!r)r={ok:false};
+  if(!r.error)r.error="HTTP_"+x.status;
+  r.httpStatus=x.status;
+  cb(null,r);
+ };
+ x.onerror=function(){cb(null,{ok:false,error:"NETWORK_ERROR",details:"No se pudo conectar con la Edge Function"})};
+ x.send(JSON.stringify(body));
 }
 
 function createChallenge(){var sh=document.getElementById('cpAppShell');if(sh)sh.style.display='none';
@@ -1655,8 +1662,10 @@ function renderCpCart(){var h='',t=0;for(var i=0;i<cpCart.length;i++){var c=cpCa
 function showCpView(v){var a=['new','pending','done'];for(var i=0;i<a.length;i++){var id=a[i],el=document.getElementById(id==='new'?'cpNewView':id==='pending'?'cpPendingView':'cpDoneView'),tab=document.getElementById(id==='new'?'tabNew':id==='pending'?'tabPending':'tabDone');if(el)el.className='cpView'+(id===v?' active':'');if(tab)tab.className='cpTab'+(id===v?' active':'')}if(v==='new'&&!cpMenuLoaded)loadCpMenu();if(v!=='new')loadFeed()}
 function createCpOrder(){if(!cpCart.length){alert('Agrega al menos un producto.');return}if(!sessionToken){sessionLost('La sesión terminó. Autoriza nuevamente.');return}var items=[],subtotal=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;subtotal+=unit*c.qty;items.push({productName:p.name,productId:String(p.id),quantity:c.qty,unitPrice:unit,variant:'',options:c.options,extras:[],optionItemIds:c.optionItemIds||[],notes:c.notes||''})}var customer=(document.getElementById('cpCustomer').value||'').replace(/^\s+|\s+$/g,'');if(!customer){alert('Escribe el nombre del cliente.');return}var payload={customer:customer,subtotal:subtotal,total:subtotal,status:'Pendiente de pago / entrega',createdAt:Date.now(),notes:document.getElementById('cpOrderNotes').value||'',items:items};var b=document.querySelector('.cpCreate');b.disabled=true;b.innerHTML='Creando…';req({action:'CREATE_ORDER',sessionToken:sessionToken,order:payload},function(er,r){b.disabled=false;b.innerHTML='Crear pedido';if(er||!r||!r.ok){
  var detail=(r&&r.error?r.error:(er||'CREATE_ORDER_FAILED'));
+ if(r&&r.httpStatus)detail+=' · HTTP '+r.httpStatus;
  if(r&&r.code)detail+=' · '+r.code;
  if(r&&r.details)detail+=' · '+r.details;
+ if(r&&r.hint)detail+=' · '+r.hint;
  alert('No se pudo crear el pedido: '+detail);return
 }cpCart=[];document.getElementById('cpOrderNotes').value='';document.getElementById('cpCustomer').value='';renderCpCart();showCpView('pending');loadFeed()})}
 renderCpCats();renderCpProducts();renderCpCart();
