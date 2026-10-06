@@ -119,7 +119,8 @@ body.cpAuthorized #cpAppShell{display:block}
 <button id="tabNew" class="cpTab active" onclick="showCpView('new')">Nuevo pedido</button>
 <button id="tabPending" class="cpTab" onclick="showCpView('pending')">Pendientes de entrega <span id="navPendingCount"></span></button>
 <button id="tabDone" class="cpTab" onclick="showCpView('done')">Pagados / Entregados <span id="navDoneCount"></span></button>
-<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-03B</div>
+<button id="cpRefreshBtn" class="cpTab" type="button" onclick="cpManualRefresh()">↻ Actualizar</button>
+<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-05</div>
 </div>
 <div id="cpNewView" class="cpView active">
 <div class="cpNewLayout"><div class="cpCatalog">
@@ -1673,6 +1674,16 @@ function cpQty(i,d){if(!cpCart[i])return;if(d<0&&cpCart[i].qty===1){if(!confirm(
 function cpRemove(i){if(confirm('¿Eliminar este producto del pedido?')){cpCart.splice(i,1);renderCpCart()}}
 function renderCpCart(){var h='',t=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;t+=unit*c.qty;h+='<div class="cpCartItem"><div class="cpCartName">'+esc(p.name)+' <span style="float:right">'+money(unit*c.qty)+'</span></div>';for(var g=0;g<c.options.length;g++)h+='<div class="cpCartDetail">'+esc(c.options[g].group)+': '+esc(c.options[g].items.join(', '))+'</div>';if(c.notes)h+='<div class="cpCartDetail">Nota: '+esc(c.notes)+'</div>';h+='<div class="cpQty"><button onclick="cpQty('+i+',-1)">−</button><b>'+c.qty+'</b><button onclick="cpQty('+i+',1)">+</button><button class="cpTrash" onclick="cpRemove('+i+')">Eliminar</button></div></div>'}document.getElementById('cpCartItems').innerHTML=h||'<div class="empty">Tu pedido está vacío.</div>';document.getElementById('cpCartTotal').innerHTML=money(t)}
 function showCpView(v){var a=['new','pending','done'];for(var i=0;i<a.length;i++){var id=a[i],el=document.getElementById(id==='new'?'cpNewView':id==='pending'?'cpPendingView':'cpDoneView'),tab=document.getElementById(id==='new'?'tabNew':id==='pending'?'tabPending':'tabDone');if(el)el.className='cpView'+(id===v?' active':'');if(tab)tab.className='cpTab'+(id===v?' active':'')}if(v==='new'&&!cpMenuLoaded)loadCpMenu();if(v!=='new')loadFeed()}
+
+function cpManualRefresh(){
+ var b=document.getElementById('cpRefreshBtn');
+ if(b){b.disabled=true;b.innerHTML='↻ Actualizando…';}
+ loadCpMenu();
+ loadFeed();
+ window.setTimeout(function(){
+  if(b){b.disabled=false;b.innerHTML='↻ Actualizar';}
+ },1200);
+}
 function createCpOrder(){if(!cpCart.length){alert('Agrega al menos un producto.');return}if(!sessionToken){sessionLost('La sesión terminó. Autoriza nuevamente.');return}var items=[],subtotal=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;subtotal+=unit*c.qty;items.push({productName:p.name,productId:String(p.id),quantity:c.qty,unitPrice:unit,variant:'',options:c.options,extras:[],optionItemIds:c.optionItemIds||[],notes:c.notes||''})}var customer=(document.getElementById('cpCustomer').value||'').replace(/^\s+|\s+$/g,'');if(!customer){alert('Escribe el nombre del cliente.');return}var payload={customer:customer,subtotal:subtotal,total:subtotal,status:'Pendiente de pago / entrega',createdAt:Date.now(),notes:document.getElementById('cpOrderNotes').value||'',items:items};var b=document.querySelector('.cpCreate');b.disabled=true;b.innerHTML='Creando…';reqCreate({action:'CREATE_ORDER',sessionToken:sessionToken,order:payload},function(er,r){b.disabled=false;b.innerHTML='Crear pedido';if(er||!r||!r.ok){
  var detail=(r&&r.error?r.error:(er||'CREATE_ORDER_FAILED'));
  if(r&&r.httpStatus!==undefined)detail+=' · HTTP '+r.httpStatus;
