@@ -41,15 +41,15 @@ body.pastel{--bg:#f9e5eb;--paper:rgba(255,247,250,.94);--nav:#7b294a;--ink:#4a23
 body.editorial{--bg:#eee5d1;--paper:rgba(255,253,245,.94);--nav:#173f2c;--ink:#1d2d23;--muted:#62685f;--shadow:0 5px 15px rgba(26,61,42,.18)}
 body.moderno{--bg:#eef0ff;--paper:rgba(255,250,255,.94);--nav:#4b5f9f;--ink:#2c3760;--muted:#68708e;--shadow:0 5px 15px rgba(62,76,135,.17)}
 .cpStage{max-width:1180px;min-height:100vh;margin:auto;position:relative;overflow:hidden;background:var(--bg)}
-.cpBg{position:fixed;z-index:0;pointer-events:none;inset:0;background-repeat:no-repeat}.cpBg.primary{background-size:cover;background-position:center top;opacity:.69}.cpBg.secondary{background-size:cover;background-position:center center;opacity:.20}
-.cpShade{position:fixed;z-index:1;pointer-events:none;inset:0;background:rgba(255,255,255,.12)}.cpContent{position:relative;z-index:2;padding:14px 16px 60px}
+.cpBg{position:fixed;z-index:0;pointer-events:none;top:0;right:0;bottom:0;left:0;background-repeat:no-repeat}.cpBg.primary{background-size:cover;background-position:center top;opacity:.69}.cpBg.secondary{background-size:cover;background-position:center center;opacity:.20}
+.cpShade{position:fixed;z-index:1;pointer-events:none;top:0;right:0;bottom:0;left:0;background:rgba(255,255,255,.12)}.cpContent{position:relative;z-index:2;padding:14px 16px 60px}
 .h{background:var(--paper);color:var(--ink);padding:16px 18px;text-align:left;border-radius:13px 13px 0 0;box-shadow:var(--shadow);overflow:hidden}.h h1{margin:0;font-family:Georgia,serif;font-size:31px;line-height:1}.h>div{font-size:15px;margin-top:6px;color:var(--muted)}
 .cpMode{float:right;margin-top:-49px;border:0;border-radius:9px;background:var(--nav);color:#fff;font-size:17px;font-weight:bold;padding:12px 18px;min-width:92px}
 .box{max-width:760px;margin:24px auto;background:var(--paper);padding:26px;text-align:center;border-radius:14px;box-shadow:var(--shadow)}.box h2{font-size:27px}.box p,#info{font-size:17px;line-height:1.45}.qr{width:310px;height:310px}.state{font-size:17px;padding:13px}.btn{padding:13px 19px;background:var(--nav);font-size:18px;border-radius:9px}.timer{font-size:25px}
 #ordersPanel{display:none;max-width:1120px;margin:16px auto;padding:0}.toolbar{background:var(--paper);padding:16px 18px;border-radius:11px;box-shadow:var(--shadow);margin-bottom:14px;text-align:left;font-size:20px}.toolbar .btn{float:right;margin:-8px 0 0 10px}.toolbar .small{font-size:15px;color:var(--muted);margin-top:7px}
 .monitorGrid{overflow:hidden}.column{width:49.35%;box-sizing:border-box}.column.pending{float:left}.column.delivered{float:right}.sectionHead{padding:14px 15px;border-radius:11px;background:var(--nav);color:#fff;font-size:22px;font-weight:bold;text-align:left;margin-bottom:11px;box-shadow:var(--shadow)}.sectionHead .count{float:right;background:#fff;color:var(--nav);border-radius:16px;padding:3px 10px;font-size:17px}.delivered .sectionHead{background:var(--nav)}
 .order{background:var(--paper);border-radius:11px;box-shadow:var(--shadow);margin:11px 0;padding:16px}.customer{font-size:23px}.total{font-size:23px}.meta{font-size:15px;color:var(--muted);padding-top:7px}.badge{font-size:14px;padding:6px 9px}.item{padding:9px 0}.itemName{font-size:17px}.itemDetail{font-size:15px;color:var(--muted);line-height:1.35}.empty{background:var(--paper);font-size:18px;padding:30px;border-radius:11px;box-shadow:var(--shadow)}
-.cpModes{display:none;position:fixed;z-index:90;inset:0;background:rgba(9,15,20,.68);padding:22px;overflow:auto}.cpModesBox{max-width:850px;margin:7vh auto;background:#fff;border-radius:14px;padding:20px;color:#222}.cpModesBox h2{font-size:28px;margin-top:0}.cpClose{float:right;border:0;border-radius:7px;padding:9px 12px;font-size:18px}.cpModeGrid{overflow:hidden;margin:0 -6px}.cpModeCard{float:left;width:25%;padding:6px}.cpModeInside{border:3px solid #eee;border-radius:10px;overflow:hidden;cursor:pointer}.cpModeInside.sel{border-color:#222}.cpPreview{height:150px;padding:10px;background-size:cover;background-position:center}.cpPreview span{display:block;height:31px;border-radius:5px;margin-bottom:9px}.cpPreview i{display:inline-block;width:28%;height:83px;background:rgba(255,255,255,.84);border-radius:5px;margin:0 2%}.cpModeName{padding:10px;font-size:15px;font-weight:bold}.cpModeName small{display:block;font-size:12px;color:#777;margin-top:4px}
+.cpModes{display:none;position:fixed;z-index:90;top:0;right:0;bottom:0;left:0;background:rgba(9,15,20,.68);padding:22px;overflow:auto}.cpModesBox{max-width:850px;margin:7vh auto;background:#fff;border-radius:14px;padding:20px;color:#222}.cpModesBox h2{font-size:28px;margin-top:0}.cpClose{float:right;border:0;border-radius:7px;padding:9px 12px;font-size:18px}.cpModeGrid{overflow:hidden;margin:0 -6px}.cpModeCard{float:left;width:25%;padding:6px}.cpModeInside{border:3px solid #eee;border-radius:10px;overflow:hidden;cursor:pointer}.cpModeInside.sel{border-color:#222}.cpPreview{height:150px;padding:10px;background-size:cover;background-position:center}.cpPreview span{display:block;height:31px;border-radius:5px;margin-bottom:9px}.cpPreview i{display:inline-block;width:28%;height:83px;background:rgba(255,255,255,.84);border-radius:5px;margin:0 2%}.cpModeName{padding:10px;font-size:15px;font-weight:bold}.cpModeName small{display:block;font-size:12px;color:#777;margin-top:4px}
 @media(max-width:760px){html,body{font-size:17px}.cpContent{padding:7px}.h h1{font-size:25px}.cpMode{font-size:15px;padding:10px 12px}.column{width:100%;float:none!important}.column.delivered{margin-top:20px}.customer,.total{font-size:21px}.cpModeCard{width:50%}.qr{width:285px;height:285px}}
 
 
@@ -119,7 +119,7 @@ body.cpAuthorized #cpAppShell{display:block}
 <button id="tabNew" class="cpTab active" onclick="showCpView('new')">Nuevo pedido</button>
 <button id="tabPending" class="cpTab" onclick="showCpView('pending')">Pendientes de entrega <span id="navPendingCount"></span></button>
 <button id="tabDone" class="cpTab" onclick="showCpView('done')">Pagados / Entregados <span id="navDoneCount"></span></button>
-<div id="cpSessionState" class="cpTabRight">Sesión autorizada</div>
+<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-03B</div>
 </div>
 <div id="cpNewView" class="cpView active">
 <div class="cpNewLayout"><div class="cpCatalog">
@@ -1405,28 +1405,38 @@ var challengeId="",browserSecret="",expiresAt=0,pollHandle=null,timerHandle=null
 var sessionToken="",sessionExpiresAt=0,feedHandle=null;
 
 function state(t,c){var e=document.getElementById('state');e.className='state '+(c||'');e.innerHTML=t}
-function req(body,cb){
+function req(b,cb){var x=new XMLHttpRequest();x.open('POST',FUNCTION_URL,true);x.setRequestHeader('apikey',SUPABASE_PUBLISHABLE_KEY);x.setRequestHeader('Authorization','Bearer '+SUPABASE_PUBLISHABLE_KEY);x.setRequestHeader('Content-Type','application/json');x.timeout=12000;x.onreadystatechange=function(){if(x.readyState!==4)return;if(x.status>=200&&x.status<300){try{cb(null,JSON.parse(x.responseText))}catch(e){cb('Respuesta inválida')}}else{var msg='Error HTTP '+x.status;try{var z=JSON.parse(x.responseText);if(z&&z.error)msg=z.error}catch(ignore){}cb(msg)}};x.onerror=function(){cb('Error de conexión')};x.ontimeout=function(){cb('Tiempo agotado')};x.send(JSON.stringify(b))}
+
+function reqCreate(body,cb){
  var x=new XMLHttpRequest();
  x.open('POST',FUNCTION_URL,true);
  x.setRequestHeader('apikey',SUPABASE_PUBLISHABLE_KEY);
  x.setRequestHeader('Authorization','Bearer '+SUPABASE_PUBLISHABLE_KEY);
  x.setRequestHeader('Content-Type','application/json');
- x.timeout=12000;
+ x.timeout=15000;
  x.onreadystatechange=function(){
   if(x.readyState!==4)return;
-  var r=null;
-  try{r=JSON.parse(x.responseText||'{}')}catch(e){
-   r={ok:false,error:'HTTP_'+x.status,details:x.responseText||'Respuesta no JSON'};
-  }
-  if(x.status>=200&&x.status<300){cb(null,r);return}
-  if(!r)r={ok:false};
-  if(!r.error)r.error='HTTP_'+x.status;
+  var r={};
+  try{r=JSON.parse(x.responseText||'{}')}catch(e){r={ok:false,error:'HTTP_'+x.status,details:x.responseText||'Respuesta inválida'};}
   r.httpStatus=x.status;
   cb(null,r);
  };
- x.onerror=function(){cb(null,{ok:false,error:'NETWORK_ERROR',details:'Error de conexión'})};
- x.ontimeout=function(){cb(null,{ok:false,error:'TIMEOUT',details:'Tiempo agotado'})};
+ x.onerror=function(){cb(null,{ok:false,error:'NETWORK_ERROR',details:'Error de conexión',httpStatus:0});};
+ x.ontimeout=function(){cb(null,{ok:false,error:'TIMEOUT',details:'Tiempo agotado',httpStatus:0});};
  x.send(JSON.stringify(body));
+}
+
+function stopAuth(){if(pollHandle)clearInterval(pollHandle);if(timerHandle)clearInterval(timerHandle);pollHandle=timerHandle=null}
+function stopFeed(){if(feedHandle)clearInterval(feedHandle);feedHandle=null}
+
+function showQR(text){
+ try{
+  var q=new CPQRCode(0,CPQRError.M);q.addData(text);q.make();
+  var n=q.getModuleCount(),quiet=4,total=n+quiet*2,size=Math.max(3,Math.floor(280/total));
+  var h='<table role="img" aria-label="QR de autorizacion" style="border-collapse:collapse;border-spacing:0;margin:auto;background:#fff">';
+  for(var r=-quiet;r<n+quiet;r++){h+='<tr>';for(var c=-quiet;c<n+quiet;c++){var dark=(r>=0&&c>=0&&r<n&&c<n&&q.isDark(r,c));h+='<td style="padding:0;margin:0;width:'+size+'px;height:'+size+'px;background:'+(dark?'#000':'#fff')+'"></td>';}h+='</tr>';}
+  h+='</table>';document.getElementById('qr').innerHTML=h;
+ }catch(e){state('No se pudo dibujar el QR: '+e.message,'err');}
 }
 
 function createChallenge(){var sh=document.getElementById('cpAppShell');if(sh)sh.style.display='none';
@@ -1663,9 +1673,9 @@ function cpQty(i,d){if(!cpCart[i])return;if(d<0&&cpCart[i].qty===1){if(!confirm(
 function cpRemove(i){if(confirm('¿Eliminar este producto del pedido?')){cpCart.splice(i,1);renderCpCart()}}
 function renderCpCart(){var h='',t=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;t+=unit*c.qty;h+='<div class="cpCartItem"><div class="cpCartName">'+esc(p.name)+' <span style="float:right">'+money(unit*c.qty)+'</span></div>';for(var g=0;g<c.options.length;g++)h+='<div class="cpCartDetail">'+esc(c.options[g].group)+': '+esc(c.options[g].items.join(', '))+'</div>';if(c.notes)h+='<div class="cpCartDetail">Nota: '+esc(c.notes)+'</div>';h+='<div class="cpQty"><button onclick="cpQty('+i+',-1)">−</button><b>'+c.qty+'</b><button onclick="cpQty('+i+',1)">+</button><button class="cpTrash" onclick="cpRemove('+i+')">Eliminar</button></div></div>'}document.getElementById('cpCartItems').innerHTML=h||'<div class="empty">Tu pedido está vacío.</div>';document.getElementById('cpCartTotal').innerHTML=money(t)}
 function showCpView(v){var a=['new','pending','done'];for(var i=0;i<a.length;i++){var id=a[i],el=document.getElementById(id==='new'?'cpNewView':id==='pending'?'cpPendingView':'cpDoneView'),tab=document.getElementById(id==='new'?'tabNew':id==='pending'?'tabPending':'tabDone');if(el)el.className='cpView'+(id===v?' active':'');if(tab)tab.className='cpTab'+(id===v?' active':'')}if(v==='new'&&!cpMenuLoaded)loadCpMenu();if(v!=='new')loadFeed()}
-function createCpOrder(){if(!cpCart.length){alert('Agrega al menos un producto.');return}if(!sessionToken){sessionLost('La sesión terminó. Autoriza nuevamente.');return}var items=[],subtotal=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;subtotal+=unit*c.qty;items.push({productName:p.name,productId:String(p.id),quantity:c.qty,unitPrice:unit,variant:'',options:c.options,extras:[],optionItemIds:c.optionItemIds||[],notes:c.notes||''})}var customer=(document.getElementById('cpCustomer').value||'').replace(/^\s+|\s+$/g,'');if(!customer){alert('Escribe el nombre del cliente.');return}var payload={customer:customer,subtotal:subtotal,total:subtotal,status:'Pendiente de pago / entrega',createdAt:Date.now(),notes:document.getElementById('cpOrderNotes').value||'',items:items};var b=document.querySelector('.cpCreate');b.disabled=true;b.innerHTML='Creando…';req({action:'CREATE_ORDER',sessionToken:sessionToken,order:payload},function(er,r){b.disabled=false;b.innerHTML='Crear pedido';if(er||!r||!r.ok){
+function createCpOrder(){if(!cpCart.length){alert('Agrega al menos un producto.');return}if(!sessionToken){sessionLost('La sesión terminó. Autoriza nuevamente.');return}var items=[],subtotal=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;subtotal+=unit*c.qty;items.push({productName:p.name,productId:String(p.id),quantity:c.qty,unitPrice:unit,variant:'',options:c.options,extras:[],optionItemIds:c.optionItemIds||[],notes:c.notes||''})}var customer=(document.getElementById('cpCustomer').value||'').replace(/^\s+|\s+$/g,'');if(!customer){alert('Escribe el nombre del cliente.');return}var payload={customer:customer,subtotal:subtotal,total:subtotal,status:'Pendiente de pago / entrega',createdAt:Date.now(),notes:document.getElementById('cpOrderNotes').value||'',items:items};var b=document.querySelector('.cpCreate');b.disabled=true;b.innerHTML='Creando…';reqCreate({action:'CREATE_ORDER',sessionToken:sessionToken,order:payload},function(er,r){b.disabled=false;b.innerHTML='Crear pedido';if(er||!r||!r.ok){
  var detail=(r&&r.error?r.error:(er||'CREATE_ORDER_FAILED'));
- if(r&&r.httpStatus)detail+=' · HTTP '+r.httpStatus;
+ if(r&&r.httpStatus!==undefined)detail+=' · HTTP '+r.httpStatus;
  if(r&&r.code)detail+=' · '+r.code;
  if(r&&r.details)detail+=' · '+r.details;
  if(r&&r.hint)detail+=' · '+r.hint;
