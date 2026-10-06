@@ -120,7 +120,7 @@ body.cpAuthorized #cpAppShell{display:block}
 <button id="tabPending" class="cpTab" onclick="showCpView('pending')">Pendientes de entrega <span id="navPendingCount"></span></button>
 <button id="tabDone" class="cpTab" onclick="showCpView('done')">Pagados / Entregados <span id="navDoneCount"></span></button>
 <button id="cpRefreshBtn" class="cpTab" type="button" onclick="cpManualRefresh()">↻ Actualizar</button>
-<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-10 · INTEGRAL</div>
+<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build INTEGRAL-11 · TODO INTEGRADO</div>
 </div>
 <div id="cpNewView" class="cpView active">
 <div class="cpNewLayout"><div class="cpCatalog">
@@ -1559,19 +1559,21 @@ function sessionLost(msg){
  document.getElementById('renew').style.display='inline-block';
 }
 function loadFeed(){
- if(!sessionToken)return;
+ if(!sessionToken){sessionLost('No existe una sesión activa.');return}
+ if(sessionExpiresAt&&Date.now()>=sessionExpiresAt){sessionLost('La sesión temporal caducó.');return}
+ var fs=document.getElementById('feedState');
+ if(fs)fs.innerHTML='Actualizando pedidos…';
  req({action:'FEED',sessionToken:sessionToken},function(er,r){
-  var fs=document.getElementById('feedState');
   if(er||!r||!r.ok){
+   if(er==='SESSION_EXPIRED'||er==='INVALID_SESSION'||er==='SESSION_REVOKED'){sessionLost('La sesión temporal terminó. Autoriza nuevamente.');return}
    if(fs)fs.innerHTML='No se pudo actualizar: '+esc(er||'FEED_FAILED');
    return;
   }
+  if(r.sessionExpiresAt)sessionExpiresAt=new Date(r.sessionExpiresAt).getTime();
   var orders=r.orders||[];
   renderOrders(orders);
-  if(fs){
-   var d=new Date();
-   fs.innerHTML=orders.length+' pedidos · actualizado '+d.toLocaleTimeString();
-  }
+  var d=new Date();
+  if(fs)fs.innerHTML=orders.length+' pedidos · actualización automática '+d.toLocaleTimeString();
  });
 }
 function cpResumeFeed(){
