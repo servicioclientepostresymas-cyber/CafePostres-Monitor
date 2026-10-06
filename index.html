@@ -120,7 +120,7 @@ body.cpAuthorized #cpAppShell{display:block}
 <button id="tabPending" class="cpTab" onclick="showCpView('pending')">Pendientes de entrega <span id="navPendingCount"></span></button>
 <button id="tabDone" class="cpTab" onclick="showCpView('done')">Pagados / Entregados <span id="navDoneCount"></span></button>
 <button id="cpRefreshBtn" class="cpTab" type="button" onclick="cpManualRefresh()">↻ Actualizar</button>
-<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-06</div>
+<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-07</div>
 </div>
 <div id="cpNewView" class="cpView active">
 <div class="cpNewLayout"><div class="cpCatalog">
@@ -1502,20 +1502,50 @@ function renderOrders(orders){
  var pending=[],delivered=[],i,o,st;
  orders=orders||[];
  for(i=0;i<orders.length;i++){
-  o=orders[i]||{};st=String(o.status||'').toLowerCase();
-  if(st.indexOf('pendiente')>=0){pending.push(o)}
-  else if(st.indexOf('pagado')>=0||st.indexOf('entregado')>=0){delivered.push(o)}
-  else if(st.indexOf('cancelado')>=0){delivered.push(o)}
-  else{pending.push(o)}
+  o=orders[i]||{};
+  st=String(o.status||'').toLowerCase();
+  if(st.indexOf('pendiente')>=0){
+   pending.push(o);
+  }else if(st.indexOf('pagado')>=0||st.indexOf('entregado')>=0||st.indexOf('cancelado')>=0){
+   delivered.push(o);
+  }else{
+   pending.push(o);
+  }
  }
- 
- var pHost=document.getElementById('cpPendingHost'),dHost=document.getElementById('cpDoneHost');
- if(pHost)pHost.innerHTML=ph||'<div class="empty"><b>Sin pedidos pendientes.</b></div>';
- if(dHost)dHost.innerHTML=dh||'<div class="empty"><b>Sin pedidos pagados / entregados.</b></div>';
- if(document.getElementById('cpPendingCount'))document.getElementById('cpPendingCount').innerHTML=pending.length;
- if(document.getElementById('cpDoneCount'))document.getElementById('cpDoneCount').innerHTML=delivered.length;
- if(document.getElementById('navPendingCount'))document.getElementById('navPendingCount').innerHTML='('+pending.length+')';
- if(document.getElementById('navDoneCount'))document.getElementById('navDoneCount').innerHTML='('+delivered.length+')';
+
+ /* Restaurado del monitor funcional anterior:
+    después de clasificar, hay que CONSTRUIR las tarjetas HTML. */
+ var ph='',dh='';
+ for(i=0;i<pending.length;i++){
+  ph+=orderCard(pending[i],false);
+ }
+ for(i=0;i<delivered.length;i++){
+  st=String(delivered[i].status||'').toLowerCase();
+  dh+=orderCard(delivered[i],st.indexOf('cancelado')>=0);
+ }
+
+ var pHost=document.getElementById('cpPendingHost');
+ var dHost=document.getElementById('cpDoneHost');
+
+ if(pHost){
+  pHost.innerHTML=ph||'<div class="empty"><b>Sin pedidos pendientes.</b></div>';
+ }
+ if(dHost){
+  dHost.innerHTML=dh||'<div class="empty"><b>Sin pedidos pagados / entregados.</b></div>';
+ }
+
+ if(document.getElementById('cpPendingCount')){
+  document.getElementById('cpPendingCount').innerHTML=pending.length;
+ }
+ if(document.getElementById('cpDoneCount')){
+  document.getElementById('cpDoneCount').innerHTML=delivered.length;
+ }
+ if(document.getElementById('navPendingCount')){
+  document.getElementById('navPendingCount').innerHTML='('+pending.length+')';
+ }
+ if(document.getElementById('navDoneCount')){
+  document.getElementById('navDoneCount').innerHTML='('+delivered.length+')';
+ }
 }
 function sessionLost(msg){
  stopFeed();sessionToken='';sessionExpiresAt=0;
