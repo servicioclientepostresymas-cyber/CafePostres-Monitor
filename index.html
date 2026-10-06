@@ -120,7 +120,7 @@ body.cpAuthorized #cpAppShell{display:block}
 <button id="tabPending" class="cpTab" onclick="showCpView('pending')">Pendientes de entrega <span id="navPendingCount"></span></button>
 <button id="tabDone" class="cpTab" onclick="showCpView('done')">Pagados / Entregados <span id="navDoneCount"></span></button>
 <button id="cpRefreshBtn" class="cpTab" type="button" onclick="cpManualRefresh()">↻ Actualizar</button>
-<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-07</div>
+<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-08</div>
 </div>
 <div id="cpNewView" class="cpView active">
 <div class="cpNewLayout"><div class="cpCatalog">
@@ -1562,8 +1562,9 @@ function loadFeed(){
  if(!sessionToken){sessionLost('No existe una sesión activa.');return}
  if(sessionExpiresAt&&Date.now()>=sessionExpiresAt){sessionLost('La sesión temporal caducó.');return}
  document.getElementById('feedState').innerHTML='Actualizando pedidos…';
- var nowLocal=new Date(),dayStart=new Date(nowLocal.getFullYear(),nowLocal.getMonth(),nowLocal.getDate(),0,0,0,0),dayEnd=new Date(nowLocal.getFullYear(),nowLocal.getMonth(),nowLocal.getDate()+1,0,0,0,0);
- req({action:'FEED',sessionToken:sessionToken,todayStart:dayStart.toISOString(),todayEnd:dayEnd.toISOString()},function(er,r){
+ /* ESTABLE-08: FEED directo. La Edge entrega la colección reconstruida y
+    el monitor la renderiza sin imponer un segundo filtro horario desde Safari. */
+ req({action:'FEED',sessionToken:sessionToken},function(er,r){
   if(er||!r||!r.ok){
    if(er==='SESSION_EXPIRED'||er==='INVALID_SESSION'||er==='SESSION_REVOKED'){sessionLost('La sesión temporal terminó. Autoriza nuevamente.');return}
    document.getElementById('feedState').innerHTML='No se pudo actualizar: '+esc(er||'FEED_FAILED');return
