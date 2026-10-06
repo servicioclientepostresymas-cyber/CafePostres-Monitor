@@ -92,6 +92,18 @@ body.cpAuthorized #cpMainNav{display:block!important}
 
 #cpAppShell{display:none}
 body.cpAuthorized #cpAppShell{display:block}
+
+/* Opciones configurables estilo CafePostres: cuadrícula de botones */
+.cpOptionGroup{margin:14px 0 18px;border:1px solid rgba(0,0,0,.12);border-radius:12px;overflow:hidden;background:#fff}
+.cpOptionGroupTitle{padding:11px 13px;font-size:19px;font-weight:bold;background:rgba(0,0,0,.045)}
+.cpOptionGrid{display:table;width:100%;table-layout:fixed;border-collapse:separate;border-spacing:7px}
+.cpOptionRow{display:table-row}
+.cpOptionCell{display:table-cell;vertical-align:middle}
+.cpOptionBtn{display:block;width:100%;box-sizing:border-box;border:2px solid rgba(0,0,0,.13);border-radius:10px;background:#fff;color:var(--ink);padding:13px 8px;min-height:52px;font-size:17px;font-weight:bold;text-align:center;cursor:pointer}
+.cpOptionBtn.selected{background:var(--nav);border-color:var(--nav);color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.22),0 3px 9px rgba(0,0,0,.16)}
+.cpOptionPrice{display:block;font-size:14px;font-weight:normal;margin-top:3px}
+.cpGroupRule{font-size:13px;color:var(--muted);font-weight:normal;margin-left:6px}
+
 </style></head><body class="atelier"><div class="cpStage"><div id="cpBg1" class="cpBg primary"></div><div id="cpBg2" class="cpBg secondary"></div><div class="cpShade"></div><div class="cpContent">
 <div class="h"><h1>Café Postres y Bocadillos Gaby's</h1><div>Gourmet · Artesanal · Monitor protegido</div><button class="cpMode" onclick="openCpModes()">☰ Mode</button></div>
 <div id="authBox" class="box">
@@ -1582,15 +1594,71 @@ function renderCpCats(){var h='';for(var i=0;i<CP_CATS.length;i++)h+='<button cl
 function setCpCat(i){cpCat=CP_CATS[i];renderCpCats();renderCpProducts()}
 function renderCpProducts(){var q=String(document.getElementById('cpSearch').value||'').toLowerCase(),h='';for(var i=0;i<CP_PRODUCTS.length;i++){var p=CP_PRODUCTS[i];if(cpCat!=='Todos'&&p.cat!==cpCat)continue;if(q&&String(p.name).toLowerCase().indexOf(q)<0&&String(p.desc).toLowerCase().indexOf(q)<0)continue;h+='<div class="cpProduct" onclick="pickCpProduct('+i+')"><div class="cpProductIn"><div class="cpProductImg" style="background-image:url('+cpProductImage(i)+')"></div><div class="cpProductBody"><div class="cpProductName">'+esc(p.name)+'</div><div class="cpProductDesc">'+esc(p.desc||p.cat)+'</div><div class="cpPrice">'+money(p.price)+'</div></div><button class="cpPlus">+</button></div></div>'}document.getElementById('cpProducts').innerHTML=h||(cpMenuLoaded?'<div class="empty">No hay productos disponibles en esta categoría.</div>':'<div class="empty">El menú aparecerá después de leer la configuración autorizada.</div>')}
 function pickCpProduct(i){var p=CP_PRODUCTS[i];if(p.optionGroups&&p.optionGroups.length){openCpDynamicConfig(i)}else addCpCart(i,[],document.getElementById('cpOrderNotes').value||'')}
-function openCpDynamicConfig(i){cpConfigIndex=i;var p=CP_PRODUCTS[i],box=document.querySelector('#cpConfig .cpConfigBox'),h='<button class="cpClose" onclick="closeCpConfig()">✕</button><h2>Configurar '+esc(p.name)+'</h2>';for(var g=0;g<p.optionGroups.length;g++){var gr=p.optionGroups[g];h+='<div class="cpConfigRow"><b>'+esc(gr.name)+'</b><br>';for(var j=0;j<gr.items.length;j++){var it=gr.items[j],typ=gr.multipleSelection?'checkbox':'radio';h+='<label><input type="'+typ+'" name="dynGroup'+g+'" value="'+j+'"> '+esc(it.name)+(Number(it.additionalPrice||0)?' +'+money(Number(it.additionalPrice)):'')+'</label>'}h+='</div>'}h+='<div class="cpConfigRow"><textarea id="cpConfigNotes" placeholder="Notas de este producto"></textarea></div><div class="cpConfigActions"><button class="btn" onclick="closeCpConfig()">Cancelar</button><button class="btn" onclick="saveCpDynamicConfig()">Agregar</button></div>';box.innerHTML=h;document.getElementById('cpConfig').style.display='block'}
-function saveCpDynamicConfig(){if(cpConfigIndex<0)return;var p=CP_PRODUCTS[cpConfigIndex],sel=[],extra=0;for(var g=0;g<p.optionGroups.length;g++){var gr=p.optionGroups[g],els=document.getElementsByName('dynGroup'+g),chosen=[];for(var j=0;j<els.length;j++)if(els[j].checked){var it=gr.items[Number(els[j].value)];chosen.push(it.name);extra+=Number(it.additionalPrice||0)}if(chosen.length<Number(gr.minSelections||0)){alert('Selecciona '+gr.name);return}if(chosen.length)sel.push({group:gr.name,items:chosen})}addCpCart(cpConfigIndex,sel,document.getElementById('cpConfigNotes').value||'',extra);closeCpConfig()}
+function openCpDynamicConfig(i){
+ cpConfigIndex=i;
+ var p=CP_PRODUCTS[i],box=document.querySelector('#cpConfig .cpConfigBox');
+ var h='<button class="cpClose" onclick="closeCpConfig()">✕</button><h2>Configurar '+esc(p.name)+'</h2>';
+ for(var g=0;g<p.optionGroups.length;g++){
+   var gr=p.optionGroups[g],rule=gr.multipleSelection?'Selecciona las opciones':'Selecciona una opción';
+   if(gr.minSelections>0)rule+=' · mínimo '+gr.minSelections;
+   if(gr.maxSelections>1)rule+=' · máximo '+gr.maxSelections;
+   h+='<div class="cpOptionGroup"><div class="cpOptionGroupTitle">'+esc(gr.name)+'<span class="cpGroupRule">'+esc(rule)+'</span></div><div class="cpOptionGrid">';
+   for(var j=0;j<gr.items.length;j++){
+     var it=gr.items[j];
+     if(j%3===0)h+='<div class="cpOptionRow">';
+     h+='<div class="cpOptionCell"><button type="button" id="cpOpt_'+g+'_'+j+'" class="cpOptionBtn" data-group="'+g+'" data-item="'+j+'" onclick="toggleCpOption('+g+','+j+')">'+esc(it.name)+(Number(it.additionalPrice||0)?'<span class="cpOptionPrice">+'+money(Number(it.additionalPrice))+'</span>':'')+'</button></div>';
+     if(j%3===2||j===gr.items.length-1){
+       var fill=2-(j%3);if(j===gr.items.length-1)while(fill-->0)h+='<div class="cpOptionCell"></div>';
+       h+='</div>';
+     }
+   }
+   h+='</div></div>';
+ }
+ h+='<div class="cpConfigRow"><textarea id="cpConfigNotes" placeholder="Notas de este producto"></textarea></div><div class="cpConfigActions"><button class="btn" onclick="closeCpConfig()">Cancelar</button><button class="btn" onclick="saveCpDynamicConfig()">Agregar</button></div>';
+ box.innerHTML=h;document.getElementById('cpConfig').style.display='block';
+}
+function toggleCpOption(g,j){
+ var p=CP_PRODUCTS[cpConfigIndex],gr=p.optionGroups[g],b=document.getElementById('cpOpt_'+g+'_'+j);
+ if(!gr.multipleSelection){
+   for(var k=0;k<gr.items.length;k++){var x=document.getElementById('cpOpt_'+g+'_'+k);if(x)x.className='cpOptionBtn';}
+   b.className='cpOptionBtn selected';
+ }else{
+   var selected=0;
+   for(var k=0;k<gr.items.length;k++){var x=document.getElementById('cpOpt_'+g+'_'+k);if(x&&x.className.indexOf('selected')>=0)selected++;}
+   if(b.className.indexOf('selected')>=0)b.className='cpOptionBtn';
+   else if(!gr.maxSelections||selected<gr.maxSelections)b.className='cpOptionBtn selected';
+ }
+}
+function saveCpDynamicConfig(){
+ if(cpConfigIndex<0)return;
+ var p=CP_PRODUCTS[cpConfigIndex],sel=[],ids=[],extra=0;
+ for(var g=0;g<p.optionGroups.length;g++){
+   var gr=p.optionGroups[g],chosen=[];
+   for(var j=0;j<gr.items.length;j++){
+     var b=document.getElementById('cpOpt_'+g+'_'+j);
+     if(b&&b.className.indexOf('selected')>=0){
+       var it=gr.items[j];chosen.push(it.name);ids.push(String(it.id));extra+=Number(it.additionalPrice||0);
+     }
+   }
+   if(chosen.length<Number(gr.minSelections||0)){alert('Selecciona '+gr.name);return}
+   if(gr.maxSelections>0&&chosen.length>gr.maxSelections){alert('Máximo '+gr.maxSelections+' en '+gr.name);return}
+   if(chosen.length)sel.push({group:gr.name,items:chosen});
+ }
+ addCpCart(cpConfigIndex,sel,document.getElementById('cpConfigNotes').value||'',extra,ids);
+ closeCpConfig();
+}
 function closeCpConfig(){document.getElementById('cpConfig').style.display='none';cpConfigIndex=-1}
-function addCpCart(i,options,notes,extra){var p=CP_PRODUCTS[i],opt=JSON.stringify(options||[]),key=String(p.id)+'|'+opt+'|'+String(notes||''),j;for(j=0;j<cpCart.length;j++)if(cpCart[j].key===key){cpCart[j].qty++;renderCpCart();return}cpCart.push({key:key,product:i,productId:p.id,qty:1,options:options||[],notes:notes||'',extra:Number(extra||0)});renderCpCart()}
+function addCpCart(i,options,notes,extra,optionItemIds){var p=CP_PRODUCTS[i],opt=JSON.stringify(options||[]),key=String(p.id)+'|'+opt+'|'+String(notes||''),j;for(j=0;j<cpCart.length;j++)if(cpCart[j].key===key){cpCart[j].qty++;renderCpCart();return}cpCart.push({key:key,product:i,productId:p.id,qty:1,options:options||[],notes:notes||'',extra:Number(extra||0),optionItemIds:optionItemIds||[]});renderCpCart()}
 function cpQty(i,d){if(!cpCart[i])return;if(d<0&&cpCart[i].qty===1){if(!confirm('¿Eliminar este producto del pedido?'))return;cpCart.splice(i,1)}else cpCart[i].qty+=d;renderCpCart()}
 function cpRemove(i){if(confirm('¿Eliminar este producto del pedido?')){cpCart.splice(i,1);renderCpCart()}}
 function renderCpCart(){var h='',t=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;t+=unit*c.qty;h+='<div class="cpCartItem"><div class="cpCartName">'+esc(p.name)+' <span style="float:right">'+money(unit*c.qty)+'</span></div>';for(var g=0;g<c.options.length;g++)h+='<div class="cpCartDetail">'+esc(c.options[g].group)+': '+esc(c.options[g].items.join(', '))+'</div>';if(c.notes)h+='<div class="cpCartDetail">Nota: '+esc(c.notes)+'</div>';h+='<div class="cpQty"><button onclick="cpQty('+i+',-1)">−</button><b>'+c.qty+'</b><button onclick="cpQty('+i+',1)">+</button><button class="cpTrash" onclick="cpRemove('+i+')">Eliminar</button></div></div>'}document.getElementById('cpCartItems').innerHTML=h||'<div class="empty">Tu pedido está vacío.</div>';document.getElementById('cpCartTotal').innerHTML=money(t)}
 function showCpView(v){var a=['new','pending','done'];for(var i=0;i<a.length;i++){var id=a[i],el=document.getElementById(id==='new'?'cpNewView':id==='pending'?'cpPendingView':'cpDoneView'),tab=document.getElementById(id==='new'?'tabNew':id==='pending'?'tabPending':'tabDone');if(el)el.className='cpView'+(id===v?' active':'');if(tab)tab.className='cpTab'+(id===v?' active':'')}if(v==='new'&&!cpMenuLoaded)loadCpMenu();if(v!=='new')loadFeed()}
-function createCpOrder(){if(!cpCart.length){alert('Agrega al menos un producto.');return}if(!sessionToken){sessionLost('La sesión terminó. Autoriza nuevamente.');return}var items=[],subtotal=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;subtotal+=unit*c.qty;items.push({productName:p.name,productId:String(p.id),quantity:c.qty,unitPrice:unit,variant:'',options:c.options,extras:[],notes:c.notes||''})}var customer=(document.getElementById('cpCustomer').value||'').replace(/^\s+|\s+$/g,'');if(!customer){alert('Escribe el nombre del cliente.');return}var payload={customer:customer,subtotal:subtotal,total:subtotal,status:'Pendiente de pago / entrega',createdAt:Date.now(),notes:document.getElementById('cpOrderNotes').value||'',items:items};var b=document.querySelector('.cpCreate');b.disabled=true;b.innerHTML='Creando…';req({action:'CREATE_ORDER',sessionToken:sessionToken,order:payload},function(er,r){b.disabled=false;b.innerHTML='Crear pedido';if(er||!r||!r.ok){alert('El servidor todavía no aceptó CREATE_ORDER.');return}cpCart=[];document.getElementById('cpOrderNotes').value='';document.getElementById('cpCustomer').value='';renderCpCart();showCpView('pending');loadFeed()})}
+function createCpOrder(){if(!cpCart.length){alert('Agrega al menos un producto.');return}if(!sessionToken){sessionLost('La sesión terminó. Autoriza nuevamente.');return}var items=[],subtotal=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;subtotal+=unit*c.qty;items.push({productName:p.name,productId:String(p.id),quantity:c.qty,unitPrice:unit,variant:'',options:c.options,extras:[],optionItemIds:c.optionItemIds||[],notes:c.notes||''})}var customer=(document.getElementById('cpCustomer').value||'').replace(/^\s+|\s+$/g,'');if(!customer){alert('Escribe el nombre del cliente.');return}var payload={customer:customer,subtotal:subtotal,total:subtotal,status:'Pendiente de pago / entrega',createdAt:Date.now(),notes:document.getElementById('cpOrderNotes').value||'',items:items};var b=document.querySelector('.cpCreate');b.disabled=true;b.innerHTML='Creando…';req({action:'CREATE_ORDER',sessionToken:sessionToken,order:payload},function(er,r){b.disabled=false;b.innerHTML='Crear pedido';if(er||!r||!r.ok){
+ var detail=(r&&r.error?r.error:(er||'CREATE_ORDER_FAILED'));
+ if(r&&r.code)detail+=' · '+r.code;
+ if(r&&r.details)detail+=' · '+r.details;
+ alert('No se pudo crear el pedido: '+detail);return
+}cpCart=[];document.getElementById('cpOrderNotes').value='';document.getElementById('cpCustomer').value='';renderCpCart();showCpView('pending');loadFeed()})}
 renderCpCats();renderCpProducts();renderCpCart();
 
 
