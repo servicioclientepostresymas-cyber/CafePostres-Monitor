@@ -120,7 +120,7 @@ body.cpAuthorized #cpAppShell{display:block}
 <button id="tabPending" class="cpTab" onclick="showCpView('pending')">Pendientes de entrega <span id="navPendingCount"></span></button>
 <button id="tabDone" class="cpTab" onclick="showCpView('done')">Pagados / Entregados <span id="navDoneCount"></span></button>
 <button id="cpRefreshBtn" class="cpTab" type="button" onclick="cpManualRefresh()">↻ Actualizar</button>
-<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-05</div>
+<div id="cpSessionState" class="cpTabRight">Sesión autorizada · Build ESTABLE-06</div>
 </div>
 <div id="cpNewView" class="cpView active">
 <div class="cpNewLayout"><div class="cpCatalog">
@@ -1539,16 +1539,25 @@ function loadFeed(){
    document.getElementById('feedState').innerHTML='No se pudo actualizar: '+esc(er||'FEED_FAILED');return
   }
   if(r.sessionExpiresAt)sessionExpiresAt=new Date(r.sessionExpiresAt).getTime();
-  var todayOrders=[],srcOrders=r.orders||[];
-  for(var oi=0;oi<srcOrders.length;oi++){
-   var od=new Date(srcOrders[oi].created_at);
-   if(!isNaN(od.getTime())&&od>=dayStart&&od<dayEnd)todayOrders.push(srcOrders[oi]);
-  }
+  var todayOrders=r.orders||[];
   renderOrders(todayOrders);
   var d=new Date();
-  document.getElementById('feedState').innerHTML=todayOrders.length+' pedidos de hoy · actualizado '+d.toLocaleTimeString();
+  document.getElementById('feedState').innerHTML=todayOrders.length+' pedidos de hoy · actualización automática '+d.toLocaleTimeString();
  })
 }
+function cpResumeFeed(){
+ if(sessionToken){
+  loadFeed();
+  if(!feedHandle)feedHandle=setInterval(loadFeed,5000);
+ }
+}
+if(document.addEventListener){
+ document.addEventListener('visibilitychange',function(){
+  if(!document.hidden)cpResumeFeed();
+ },false);
+}
+if(window.addEventListener)window.addEventListener('focus',cpResumeFeed,false);
+
 function openOrders(){document.body.className=document.body.className+' cpAuthorized';document.getElementById('cpAppShell').style.display='block';
  document.getElementById('authBox').style.display='none';
  document.getElementById('cpMainNav').style.display='block';showCpView('new');loadCpMenu();
