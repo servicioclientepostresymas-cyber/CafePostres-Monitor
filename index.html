@@ -89,6 +89,9 @@ body.cpAuthorized #cpMainNav{display:block!important}
 .cpOrderColumn.single{width:100%;float:none}
 .cpMenuState{font-size:14px;color:var(--muted);margin:6px 0 10px}
 
+
+#cpAppShell{display:none}
+body.cpAuthorized #cpAppShell{display:block}
 </style></head><body class="atelier"><div class="cpStage"><div id="cpBg1" class="cpBg primary"></div><div id="cpBg2" class="cpBg secondary"></div><div class="cpShade"></div><div class="cpContent">
 <div class="h"><h1>Café Postres y Bocadillos Gaby's</h1><div>Gourmet · Artesanal · Monitor protegido</div><button class="cpMode" onclick="openCpModes()">☰ Mode</button></div>
 <div id="authBox" class="box">
@@ -100,7 +103,7 @@ body.cpAuthorized #cpMainNav{display:block!important}
 <button id="renew" class="btn" style="display:none" onclick="createChallenge()">Generar nuevo QR</button>
 <p>Escanea el QR desde CafePostres y confirma <b>Autorizar</b>. Caduca en 2 minutos.</p>
 </div>
-<div id="cpMainNav" class="cpMainNav">
+<div id="cpAppShell" style="display:none"><div id="cpMainNav" class="cpMainNav">
 <button id="tabNew" class="cpTab active" onclick="showCpView('new')">Nuevo pedido</button>
 <button id="tabPending" class="cpTab" onclick="showCpView('pending')">Pendientes de entrega <span id="navPendingCount"></span></button>
 <button id="tabDone" class="cpTab" onclick="showCpView('done')">Pagados / Entregados <span id="navDoneCount"></span></button>
@@ -117,19 +120,8 @@ body.cpAuthorized #cpMainNav{display:block!important}
 </div></div></div>
 <div id="cpPendingView" class="cpView"><div class="cpOrderColumns"><div class="cpOrderColumn single"><div class="sectionHead">Pendientes de entrega <span id="cpPendingCount" class="count">0</span></div><div id="cpPendingHost"></div></div></div></div>
 <div id="cpDoneView" class="cpView"><div class="sectionHead">Pagados / Entregados <span id="cpDoneCount" class="count">0</span></div><div id="cpDoneHost"></div></div>
-<div id="ordersPanel">
-<div class="toolbar">
-<b>Pedidos CafePostres</b>
-<button class="btn" onclick="loadFeed()">Actualizar</button>
-<div id="feedState" class="small">Conectando…</div>
-</div>
-<div id="orders" class="monitorGrid">
-<div class="column pending"><div class="sectionHead">Pendientes <span id="pendingCount" class="count">0</span></div><div id="pendingOrders"></div></div>
-<div class="column delivered"><div class="sectionHead">Entregados <span id="deliveredCount" class="count">0</span></div><div id="deliveredOrders"></div></div>
-</div>
-</div>
 <div id="cpConfig" class="cpConfig"><div class="cpConfigBox"><button class="cpClose" onclick="closeCpConfig()">✕</button><h2 id="cpConfigTitle">Configurar producto</h2><div class="cpConfigRow"><b>Fruta</b><br><label><input type="radio" name="cpFruit" value="Fresa" checked> Fresa</label><label><input type="radio" name="cpFruit" value="Plátano"> Plátano</label><label><input type="radio" name="cpFruit" value="Mixta"> Mixta</label></div><div class="cpConfigRow"><b>Salsa</b><br><label><input type="radio" name="cpSauce" value="Chocolate" checked> Chocolate</label><label><input type="radio" name="cpSauce" value="Cajeta"> Cajeta</label><label><input type="radio" name="cpSauce" value="Lechera"> Lechera</label></div><div class="cpConfigRow"><b>Extras</b><br><label><input type="checkbox" name="cpExtra" value="Nuez"> Nuez</label><label><input type="checkbox" name="cpExtra" value="Helado"> Helado</label></div><div class="cpConfigRow"><textarea id="cpConfigNotes" placeholder="Notas de este producto"></textarea></div><div class="cpConfigActions"><button class="btn" onclick="closeCpConfig()">Cancelar</button><button class="btn" onclick="saveCpConfig()">Agregar</button></div></div></div>
-<div id="cpModes" class="cpModes"><div class="cpModesBox"><button class="cpClose" onclick="closeCpModes()">✕</button><h2>Mode</h2><div class="cpModeGrid">
+</div><div id="cpModes" class="cpModes"><div class="cpModesBox"><button class="cpClose" onclick="closeCpModes()">✕</button><h2>Mode</h2><div class="cpModeGrid">
 <div class="cpModeCard"><div id="cpAtelier" class="cpModeInside" onclick="setCpMode('atelier')"><div class="cpPreview" id="pvAtelier"><span style="background:#073b5b"></span><i></i><i></i><i></i></div><div class="cpModeName">Atelier Gourmet<small>Vainilla · azul noche · terracota</small></div></div></div>
 <div class="cpModeCard"><div id="cpPastel" class="cpModeInside" onclick="setCpMode('pastel')"><div class="cpPreview" id="pvPastel"><span style="background:#7b294a"></span><i></i><i></i><i></i></div><div class="cpModeName">Pastelería Contemporánea<small>Rosa · ciruela · floral</small></div></div></div>
 <div class="cpModeCard"><div id="cpEditorial" class="cpModeInside" onclick="setCpMode('editorial')"><div class="cpPreview" id="pvEditorial"><span style="background:#173f2c"></span><i></i><i></i><i></i></div><div class="cpModeName">Café Editorial<small>Crema · bosque · botánico</small></div></div></div>
@@ -1415,9 +1407,9 @@ function showQR(text){
  }catch(e){state('No se pudo dibujar el QR: '+e.message,'err');}
 }
 
-function createChallenge(){
+function createChallenge(){var sh=document.getElementById('cpAppShell');if(sh)sh.style.display='none';
  stopAuth();stopFeed();sessionToken='';sessionExpiresAt=0;challengeId=browserSecret='';
- document.getElementById('ordersPanel').style.display='none';if(document.getElementById('cpMainNav'))document.getElementById('cpMainNav').style.display='none';
+ if(document.getElementById('cpMainNav'))document.getElementById('cpMainNav').style.display='none';
  document.getElementById('authBox').style.display='block';
  document.getElementById('title').innerHTML='🔒 Autorizar este monitor';
  document.getElementById('info').innerHTML='Generando código de autorización…';
@@ -1483,13 +1475,7 @@ function renderOrders(orders){
   else if(st.indexOf('cancelado')>=0){delivered.push(o)}
   else{pending.push(o)}
  }
- document.getElementById('pendingCount').innerHTML=pending.length;
- document.getElementById('deliveredCount').innerHTML=delivered.length;
- var ph='',dh='';
- for(i=0;i<pending.length;i++)ph+=orderCard(pending[i],false);
- for(i=0;i<delivered.length;i++){st=String(delivered[i].status||'').toLowerCase();dh+=orderCard(delivered[i],st.indexOf('cancelado')>=0)}
- document.getElementById('pendingOrders').innerHTML=ph||'<div class="empty"><b>Sin pedidos pendientes.</b></div>';
- document.getElementById('deliveredOrders').innerHTML=dh||'<div class="empty"><b>Sin pedidos entregados.</b></div>';
+ 
  var pHost=document.getElementById('cpPendingHost'),dHost=document.getElementById('cpDoneHost');
  if(pHost)pHost.innerHTML=ph||'<div class="empty"><b>Sin pedidos pendientes.</b></div>';
  if(dHost)dHost.innerHTML=dh||'<div class="empty"><b>Sin pedidos pagados / entregados.</b></div>';
@@ -1500,7 +1486,7 @@ function renderOrders(orders){
 }
 function sessionLost(msg){
  stopFeed();sessionToken='';sessionExpiresAt=0;
- document.getElementById('ordersPanel').style.display='none';
+ 
  document.getElementById('authBox').style.display='block';
  document.getElementById('qr').innerHTML='';
  document.getElementById('timer').innerHTML='';
@@ -1524,9 +1510,9 @@ function loadFeed(){
   document.getElementById('feedState').innerHTML=(r.orders?r.orders.length:0)+' pedidos · actualizado '+d.toLocaleTimeString();
  })
 }
-function openOrders(){document.body.className=document.body.className+' cpAuthorized';
+function openOrders(){document.body.className=document.body.className+' cpAuthorized';document.getElementById('cpAppShell').style.display='block';
  document.getElementById('authBox').style.display='none';
- document.getElementById('ordersPanel').style.display='block';document.getElementById('cpMainNav').style.display='block';showCpView('new');loadCpMenu();
+ document.getElementById('cpMainNav').style.display='block';showCpView('new');loadCpMenu();
  loadFeed();
  stopFeed();feedHandle=setInterval(loadFeed,5000);
 }
