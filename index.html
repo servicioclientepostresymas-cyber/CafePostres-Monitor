@@ -92,7 +92,7 @@ body.cpAuthorized #cpMainNav{display:block!important}
 
 #cpAppShell{display:none}
 body.cpAuthorized #cpAppShell{display:block}
-</style></head><body class="atelier"><div class="cpStage"><div id="cpBg1" class="cpBg primary"></div><div id="cpBg2" class="cpBg secondary"></div><div class="cpShade"></div><div class="cpContent">
+</style><style>#tabNew,#cpNewView{display:none!important}</style></head><body class="atelier"><div class="cpStage"><div id="cpBg1" class="cpBg primary"></div><div id="cpBg2" class="cpBg secondary"></div><div class="cpShade"></div><div class="cpContent">
 <div class="h"><h1>Café Postres y Bocadillos Gaby's</h1><div>Gourmet · Artesanal · Monitor protegido</div><button class="cpMode" onclick="openCpModes()">☰ Mode</button></div>
 <div id="authBox" class="box">
 <h2 id="title">🔒 Autorizar este monitor</h2>
@@ -104,20 +104,11 @@ body.cpAuthorized #cpAppShell{display:block}
 <p>Escanea el QR desde CafePostres y confirma <b>Autorizar</b>. Caduca en 2 minutos.</p>
 </div>
 <div id="cpAppShell" style="display:none"><div id="cpMainNav" class="cpMainNav">
-<button id="tabNew" class="cpTab active" onclick="showCpView('new')">Nuevo pedido</button>
+
 <button id="tabPending" class="cpTab" onclick="showCpView('pending')">Pendientes de entrega <span id="navPendingCount"></span></button>
 <button id="tabDone" class="cpTab" onclick="showCpView('done')">Pagados / Entregados <span id="navDoneCount"></span></button>
 <div id="cpSessionState" class="cpTabRight">Sesión autorizada</div>
 </div>
-<div id="cpNewView" class="cpView active">
-<div class="cpNewLayout"><div class="cpCatalog">
-<input id="cpSearch" class="cpSearch" type="text" placeholder="Buscar producto…" onkeyup="renderCpProducts()">
-<div id="cpMenuState" class="cpMenuState">Menú: esperando autorización…</div><div id="cpCats" class="cpCats"></div><div id="cpProducts" class="cpProducts"></div>
-</div><div class="cpCart"><h2>Tu pedido</h2><div id="cpCartItems"></div>
-<textarea id="cpOrderNotes" class="cpNotes" placeholder="Notas generales del pedido"></textarea>
-<div class="cpCartTotal">Total <span id="cpCartTotal" style="float:right">$0.00</span></div>
-<button class="cpCreate" onclick="createCpOrder()">Crear pedido</button>
-</div></div></div>
 <div id="cpPendingView" class="cpView"><div class="cpOrderColumns"><div class="cpOrderColumn single"><div class="sectionHead">Pendientes de entrega <span id="cpPendingCount" class="count">0</span></div><div id="cpPendingHost"></div></div></div></div>
 <div id="cpDoneView" class="cpView"><div class="sectionHead">Pagados / Entregados <span id="cpDoneCount" class="count">0</span></div><div id="cpDoneHost"></div></div>
 <div id="cpConfig" class="cpConfig"><div class="cpConfigBox"><button class="cpClose" onclick="closeCpConfig()">✕</button><h2 id="cpConfigTitle">Configurar producto</h2><div class="cpConfigRow"><b>Fruta</b><br><label><input type="radio" name="cpFruit" value="Fresa" checked> Fresa</label><label><input type="radio" name="cpFruit" value="Plátano"> Plátano</label><label><input type="radio" name="cpFruit" value="Mixta"> Mixta</label></div><div class="cpConfigRow"><b>Salsa</b><br><label><input type="radio" name="cpSauce" value="Chocolate" checked> Chocolate</label><label><input type="radio" name="cpSauce" value="Cajeta"> Cajeta</label><label><input type="radio" name="cpSauce" value="Lechera"> Lechera</label></div><div class="cpConfigRow"><b>Extras</b><br><label><input type="checkbox" name="cpExtra" value="Nuez"> Nuez</label><label><input type="checkbox" name="cpExtra" value="Helado"> Helado</label></div><div class="cpConfigRow"><textarea id="cpConfigNotes" placeholder="Notas de este producto"></textarea></div><div class="cpConfigActions"><button class="btn" onclick="closeCpConfig()">Cancelar</button><button class="btn" onclick="saveCpConfig()">Agregar</button></div></div></div>
@@ -1512,7 +1503,7 @@ function loadFeed(){
 }
 function openOrders(){document.body.className=document.body.className+' cpAuthorized';document.getElementById('cpAppShell').style.display='block';
  document.getElementById('authBox').style.display='none';
- document.getElementById('cpMainNav').style.display='block';showCpView('new');loadCpMenu();
+ document.getElementById('cpMainNav').style.display='block';showCpView('pending');
  loadFeed();
  stopFeed();feedHandle=setInterval(loadFeed,5000);
 }
@@ -1584,7 +1575,7 @@ function cpQty(i,d){if(!cpCart[i])return;if(d<0&&cpCart[i].qty===1){if(!confirm(
 function cpRemove(i){if(confirm('¿Eliminar este producto del pedido?')){cpCart.splice(i,1);renderCpCart()}}
 function renderCpCart(){var h='',t=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;t+=unit*c.qty;h+='<div class="cpCartItem"><div class="cpCartName">'+esc(p.name)+' <span style="float:right">'+money(unit*c.qty)+'</span></div>';for(var g=0;g<c.options.length;g++)h+='<div class="cpCartDetail">'+esc(c.options[g].group)+': '+esc(c.options[g].items.join(', '))+'</div>';if(c.notes)h+='<div class="cpCartDetail">Nota: '+esc(c.notes)+'</div>';h+='<div class="cpQty"><button onclick="cpQty('+i+',-1)">−</button><b>'+c.qty+'</b><button onclick="cpQty('+i+',1)">+</button><button class="cpTrash" onclick="cpRemove('+i+')">Eliminar</button></div></div>'}document.getElementById('cpCartItems').innerHTML=h||'<div class="empty">Tu pedido está vacío.</div>';document.getElementById('cpCartTotal').innerHTML=money(t)}
 function showCpView(v){var a=['new','pending','done'];for(var i=0;i<a.length;i++){var id=a[i],el=document.getElementById(id==='new'?'cpNewView':id==='pending'?'cpPendingView':'cpDoneView'),tab=document.getElementById(id==='new'?'tabNew':id==='pending'?'tabPending':'tabDone');if(el)el.className='cpView'+(id===v?' active':'');if(tab)tab.className='cpTab'+(id===v?' active':'')}if(v==='new'&&!cpMenuLoaded)loadCpMenu();if(v!=='new')loadFeed()}
-function createCpOrder(){if(!cpCart.length){alert('Agrega al menos un producto.');return}if(!sessionToken){sessionLost('La sesión terminó. Autoriza nuevamente.');return}var items=[],subtotal=0;for(var i=0;i<cpCart.length;i++){var c=cpCart[i],p=CP_PRODUCTS[c.product],unit=p.price+c.extra;subtotal+=unit*c.qty;items.push({productName:p.name,productId:String(p.id),quantity:c.qty,unitPrice:unit,variant:'',options:c.options,extras:[],notes:c.notes||''})}var payload={customer:'Monitor web',subtotal:subtotal,total:subtotal,status:'Pendiente de pago / entrega',createdAt:Date.now(),notes:document.getElementById('cpOrderNotes').value||'',items:items};var b=document.querySelector('.cpCreate');b.disabled=true;b.innerHTML='Creando…';req({action:'CREATE_ORDER',sessionToken:sessionToken,order:payload},function(er,r){b.disabled=false;b.innerHTML='Crear pedido';if(er||!r||!r.ok){alert('El servidor todavía no aceptó CREATE_ORDER.');return}cpCart=[];document.getElementById('cpOrderNotes').value='';renderCpCart();showCpView('pending');loadFeed()})}
+
 renderCpCats();renderCpProducts();renderCpCart();
 
 
